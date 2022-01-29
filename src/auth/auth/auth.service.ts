@@ -22,7 +22,9 @@ export class AuthService {
 
     async findOne(condition: any): Promise<User> {
         return this.userRepository.findOne(condition);
-       
     }
 
+    async findAll() {
+        return this.userRepository.find()
+    }
 }

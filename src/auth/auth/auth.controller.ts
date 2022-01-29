@@ -1,10 +1,11 @@
-import { Body, Controller, Post, HttpStatus, HttpException } from '@nestjs/common';
+import { Body, Controller, Post, HttpStatus, HttpException, Get, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import * as bcrypt from 'bcrypt';
 import { UserRole } from '../entity/auth.entity';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { LoginUserDto } from '../dto/login-user.dto';
 import { JwtService } from '@nestjs/jwt';
+import { JwtGuard } from '../guard/jwt.guard';
 
 
 @Controller('auth')
@@ -27,16 +28,13 @@ export class AuthController {
             username,
             role,
             password: hashedPassword
-        })
+        });
        
-        const payload = {
-            sub: user.id,
-            username: user.username
-        }
-        delete user.password
+ 
+        delete user.password;
 
-        const token = this.jwtService.sign(payload)
-        return {user, token};
+       
+        return user;
     }
 
     @Post('login')
@@ -63,4 +61,12 @@ export class AuthController {
         const token = this.jwtService.sign(payload)
         return {user, token};
     }
+
+
+    @UseGuards(JwtGuard)
+    @Get('read')
+    read() {
+        return this.authService.findAll()
+    }
 }
+
