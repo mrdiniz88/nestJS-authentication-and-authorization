@@ -28,12 +28,11 @@ export class AuthController {
             username,
             role,
             password: hashedPassword
-        });
+        })
        
- 
-        delete user.password;
+        delete user.password
 
-       
+  
         return user;
     }
 
@@ -64,9 +63,8 @@ export class AuthController {
 
 
     @UseGuards(JwtGuard)
-    @Get('read')
-    read() {
+    @Get('test-auth')
+    test() {
         return this.authService.findAll()
     }
 }
-
