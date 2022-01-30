@@ -1,12 +1,12 @@
-import { Body, Controller, Post, HttpStatus, HttpException, Get, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Get, UseGuards, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import * as bcrypt from 'bcrypt';
-import { UserRole } from '../entity/auth.entity';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { LoginUserDto } from '../dto/login-user.dto';
 import { JwtService } from '@nestjs/jwt';
-import { JwtGuard } from '../guard/jwt.guard';
-
+import { JwtGuard } from '../guards/jwt.guard';
+import { Role } from '../decorators/role.decorator';
+import { RoleGuard } from '../guards/role.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -19,11 +19,10 @@ export class AuthController {
     async register(
         @Body() userDto: CreateUserDto
     ){
-
+        
         const { username, password, role } = userDto;
         const hashedPassword = await bcrypt.hash(password, 12);
-    
-        
+         
         const user = await this.authService.create({
             username,
             role,
@@ -31,7 +30,6 @@ export class AuthController {
         })
        
         delete user.password
-
   
         return user;
     }
@@ -40,31 +38,26 @@ export class AuthController {
     async login(
         @Body() userDto: LoginUserDto,
     ){
-
-        const { username, password } = userDto;
         
-        const user = await this.authService.findOne({username})
+        const user = await this.authService.findByLogin(userDto)
         
-        if (!user) {
-            throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
-        }
-
-        if(!await bcrypt.compare(password, user.password)) {
-            throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
-        }
         const payload = {
             sub: user.id,
-            username: user.username
+            username: user.username,
+            role: user.role
         }
 
         const token = this.jwtService.sign(payload)
-        return {user, token};
+
+        return {user, token}
     }
 
-
-    @UseGuards(JwtGuard)
-    @Get('test-auth')
-    test() {
-        return this.authService.findAll()
+    @Role('Admin')
+    @UseGuards(JwtGuard, RoleGuard)
+    @Get('read')
+    read(@Req() req) {
+        console.log(req.user);
+        return this.authService.findAll();
     }
+
 }
