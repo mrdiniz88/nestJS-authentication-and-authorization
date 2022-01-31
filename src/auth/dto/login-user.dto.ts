@@ -1,6 +1,10 @@
-import { UserRole } from "../entity/auth.entity";
+import { ApiProperty } from "@nestjs/swagger";
 
-export class LoginUserDto {  
+export class LoginUserDto {
+
+    @ApiProperty()
     username: string;
+
+    @ApiProperty()
     password: string;
 }

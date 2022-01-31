@@ -7,6 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { JwtGuard } from '../guards/jwt.guard';
 import { Role } from '../decorators/role.decorator';
 import { RoleGuard } from '../guards/role.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
@@ -54,6 +55,7 @@ export class AuthController {
 
     @Role('Admin')
     @UseGuards(JwtGuard, RoleGuard)
+    @ApiBearerAuth()
     @Get('read')
     read(@Req() req) {
         console.log(req.user);
